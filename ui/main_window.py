@@ -6,7 +6,11 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QPushButton,
     QLabel,
-    QStackedWidget
+    QStackedWidget,
+    QLineEdit,
+    QFormLayout,
+    QTableWidget,
+    QTableWidgetItem
 )
 from PySide6.QtCore import Qt
 
@@ -31,7 +35,7 @@ class MainWindow(QMainWindow):
 
         menu_layout.setContentsMargins(10,10,10,10)
         menu_layout.setSpacing(10)
-        
+
         menu_widget = QWidget()
         menu_widget.setFixedWidth(180)
         menu_widget.setLayout(menu_layout)
@@ -55,12 +59,48 @@ class MainWindow(QMainWindow):
         paginas = QStackedWidget()
 
         pagina_ventas = QLabel("Pantalla de Ventas")
-        pagina_productos = QLabel("Pantalla de Productos")
+
+        pagina_productos = QWidget()
+
+        formulario_productos =  QFormLayout()
+        self.codigo = QLineEdit()
+        self.nombre = QLineEdit()
+        self.precio = QLineEdit()
+        self.stock = QLineEdit()
+
+        formulario_productos.addRow("Codigo:", self.codigo)
+        formulario_productos.addRow("Nombre:", self.nombre)
+        formulario_productos.addRow("Precio:", self.precio)
+        formulario_productos.addRow("Stock:",  self.stock)
+
+        boton_registrar = QPushButton("Registrar producto")
+        boton_registrar.clicked.connect(self.registrar_productos)
+
+        self.tabla_productos = QTableWidget()
+        self.tabla_productos.setColumnCount(4)
+        self.tabla_productos.setHorizontalHeaderLabels([
+            "Codigo",
+            "Nombre",
+            "Precio",
+            "Stock"
+        ])
+
+        layout_productos = QVBoxLayout()
+        titulo_productos = QLabel("Gestion de productos")
+        layout_productos.addWidget(titulo_productos)
+        layout_productos.addLayout(formulario_productos)
+        layout_productos.addWidget(boton_registrar)
+        layout_productos.addWidget(self.tabla_productos)
+        layout_productos.addStretch()
+
+        pagina_productos.setLayout(layout_productos)
+
+
         pagina_inventario = QLabel("Pantalla de Inventario")
         pagina_reportes = QLabel("Pantalla de Reportes")
 
         pagina_ventas.setAlignment(Qt.AlignCenter)
-        pagina_productos.setAlignment(Qt.AlignCenter)
+        
         pagina_inventario.setAlignment(Qt.AlignCenter)
         pagina_reportes.setAlignment(Qt.AlignCenter)
 
@@ -91,3 +131,34 @@ class MainWindow(QMainWindow):
 
         main_layout.addWidget(menu_widget)
         main_layout.addWidget(paginas)
+
+    def registrar_productos(self):
+        
+        codigo = self.codigo.text()
+        nombre = self.nombre.text()
+        precio = self.precio.text()
+        stock = self.stock.text()
+
+        if not codigo or not nombre:
+            return
+        
+        fila = self.tabla_productos.rowCount()
+        self.tabla_productos.insertRow(fila)
+
+        self.tabla_productos.setItem(
+            fila, 0, QTableWidgetItem(codigo)
+        )
+
+        self.tabla_productos.setItem(
+            fila, 1, QTableWidgetItem(nombre)
+        )
+
+        self.tabla_productos.setItem(
+            fila, 2, QTableWidgetItem(precio)
+        )
+
+        self.tabla_productos.setItem(
+            fila, 3, QTableWidgetItem(stock)
+        )
+
+        
