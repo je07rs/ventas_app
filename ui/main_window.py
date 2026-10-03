@@ -10,7 +10,8 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFormLayout,
     QTableWidget,
-    QTableWidgetItem
+    QTableWidgetItem,
+    QMessageBox
 )
 from PySide6.QtCore import Qt
 
@@ -133,13 +134,37 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(paginas)
 
     def registrar_productos(self):
-        
+
         codigo = self.codigo.text()
         nombre = self.nombre.text()
         precio = self.precio.text()
         stock = self.stock.text()
 
         if not codigo or not nombre:
+            QMessageBox.warning(
+                self,
+                "Datos incompletos",
+                "El codigo y el nombre son obligatorios"
+            )
+            return
+
+        try:
+            precio = float(precio)
+            stock = int(stock)
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                "Datos inválidos",
+                "El precio debe ser un número y el stock debe ser un número entero."
+            )
+            return
+
+        if precio < 0 or stock < 0:
+            QMessageBox.warning(
+                self,
+                "Datos inválidos",
+                "El precio y el stock no pueden ser negativos"
+            )
             return
         
         fila = self.tabla_productos.rowCount()
@@ -154,11 +179,11 @@ class MainWindow(QMainWindow):
         )
 
         self.tabla_productos.setItem(
-            fila, 2, QTableWidgetItem(precio)
+            fila, 2, QTableWidgetItem(str(precio))
         )
 
         self.tabla_productos.setItem(
-            fila, 3, QTableWidgetItem(stock)
+            fila, 3, QTableWidgetItem(str(stock))
         )
 
         
