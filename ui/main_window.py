@@ -29,6 +29,13 @@ class MainWindow(QMainWindow):
 
         menu_layout = QVBoxLayout()
 
+        menu_layout.setContentsMargins(10,10,10,10)
+        menu_layout.setSpacing(10)
+        
+        menu_widget = QWidget()
+        menu_widget.setFixedWidth(180)
+        menu_widget.setLayout(menu_layout)
+
         boton_ventas = QPushButton("Ventas")
         boton_productos = QPushButton("Productos")
         boton_inventario = QPushButton("Inventario")
@@ -82,5 +89,5 @@ class MainWindow(QMainWindow):
 
         # AGREGAMOS TODO
 
-        main_layout.addLayout(menu_layout)
+        main_layout.addWidget(menu_widget)
         main_layout.addWidget(paginas)
