@@ -186,4 +186,9 @@ class MainWindow(QMainWindow):
             fila, 3, QTableWidgetItem(str(stock))
         )
 
+        self.codigo.clear()
+        self.nombre.clear()
+        self.precio.clear()
+        self.stock.clear()
+
         
