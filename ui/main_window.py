@@ -148,6 +148,17 @@ class MainWindow(QMainWindow):
             )
             return
 
+        for fila in range(self.tabla_productos.rowCount()):
+            codigo_existente = self.tabla_productos.item(fila,0).text()
+
+            if codigo_existente == codigo:
+                QMessageBox.warning(
+                    self,
+                    "Código duplicado",
+                    "Ya existe un producto con ese código."
+                )
+                return
+
         try:
             precio = float(precio)
             stock = int(stock)
