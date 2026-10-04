@@ -7,3 +7,4 @@ shiboken6==6.11.2
 SQLAlchemy==2.1.3
 typing_extensions==4.16.0
 tzdata==2026.5
+pip freeze > requirements.txt
