@@ -24,3 +24,11 @@ def guardar_producto(producto):
         except IntegrityError:
             session.rollback()
             raise
+
+def obtener_producto_por_codigo(codigo):
+    with SessionLocal() as session:
+        return session.scalar(
+            select(Producto).where(
+                Producto.codigo == codigo
+            )
+        )

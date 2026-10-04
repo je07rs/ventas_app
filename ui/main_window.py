@@ -16,9 +16,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from sqlalchemy.exc import IntegrityError
-from database.connection import SessionLocal
 from database.models import Producto
-from database.product_repository import obtener_productos, guardar_producto
+from database.product_repository import obtener_productos, guardar_producto, obtener_producto_por_codigo
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -74,13 +73,18 @@ class MainWindow(QMainWindow):
         self.precio = QLineEdit()
         self.stock = QLineEdit()
 
+        btn_buscar = QPushButton("Buscar")
+
         formulario_productos.addRow("Codigo:", self.codigo)
+        formulario_productos.addRow("", btn_buscar)
         formulario_productos.addRow("Nombre:", self.nombre)
         formulario_productos.addRow("Precio:", self.precio)
         formulario_productos.addRow("Stock:",  self.stock)
 
         boton_registrar = QPushButton("Registrar producto")
         boton_registrar.clicked.connect(self.registrar_productos)
+
+        btn_buscar.clicked.connect(self.buscar_productos)
 
         self.tabla_productos = QTableWidget()
         self.tabla_productos.setColumnCount(4)
@@ -209,6 +213,36 @@ class MainWindow(QMainWindow):
         self.nombre.clear()
         self.precio.clear()
         self.stock.clear()
+
+    def buscar_productos(self):
+        codigo = self.codigo.text().strip()
+
+        if not codigo:
+            QMessageBox.warning(
+                self,
+                "Búsqueda",
+                "Ingrese un código"
+            ) 
+            return
+
+        producto = obtener_producto_por_codigo(codigo)
+
+        if producto is None:
+            QMessageBox.information(
+                self,
+                "Búsqueda",
+                "Producto no encontrado"
+            )
+
+            self.nombre.clear()
+            self.precio.clear()
+            self.stock.clear()
+            
+            return
+        
+        self.nombre.setText(producto.nombre)
+        self.precio.setText(str(producto.precio))
+        self.stock.setText(str(producto.stock))   
 
     def cargar_productos(self):
 
