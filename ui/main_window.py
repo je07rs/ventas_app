@@ -15,6 +15,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
+from sqlalchemy import select
+from database.connection import SessionLocal
+from database.models import Producto
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -85,6 +89,8 @@ class MainWindow(QMainWindow):
             "Precio",
             "Stock"
         ])
+
+        self.cargar_productos()
 
         layout_productos = QVBoxLayout()
         titulo_productos = QLabel("Gestion de productos")
@@ -202,4 +208,34 @@ class MainWindow(QMainWindow):
         self.precio.clear()
         self.stock.clear()
 
-        
+    def cargar_productos(self):
+
+        session = SessionLocal()
+
+        productos = session.scalars(
+            select(Producto)
+        ).all()
+
+        self.tabla_productos.setRowCount(0)
+
+        for producto in productos:
+            fila = self.tabla_productos.rowCount()
+            self.tabla_productos.insertRow(fila)
+
+            self.tabla_productos.setItem(
+                fila, 0, QTableWidgetItem(producto.codigo)
+            )
+
+            self.tabla_productos.setItem(
+                fila, 1, QTableWidgetItem(producto.nombre)
+            )
+
+            self.tabla_productos.setItem(
+                fila, 2, QTableWidgetItem(str(producto.precio))
+            )
+
+            self.tabla_productos.setItem(
+                fila, 3, QTableWidgetItem(str(producto.stock))
+            )
+
+        session.close()
