@@ -6,27 +6,21 @@ from database.models import Producto
 
 def obtener_productos():
 
-    session = SessionLocal()
-
-    productos = session.scalars(
-        select(Producto)
-    ).all()
-
-    session.close()
+    with SessionLocal() as session:
+        productos = session.scalars(
+            select(Producto)
+        ).all()
 
     return productos
 
 def guardar_producto(producto):
 
-    session = SessionLocal()
+    with SessionLocal() as session:
 
-    session.add(producto)
+        session.add(producto)
 
-    try:
-        session.commit()
-    except IntegrityError:
-        session.rollback()
-        session.close()
-        raise
-
-    session.close()
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise
