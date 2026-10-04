@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from database.connection import SessionLocal
 from database.models import Producto
 
@@ -183,25 +184,34 @@ class MainWindow(QMainWindow):
                 "El precio y el stock no pueden ser negativos"
             )
             return
-        
-        fila = self.tabla_productos.rowCount()
-        self.tabla_productos.insertRow(fila)
 
-        self.tabla_productos.setItem(
-            fila, 0, QTableWidgetItem(codigo)
+        session = SessionLocal()
+
+        producto = Producto(
+            codigo = codigo,
+            nombre = nombre,
+            precio = precio,
+            stock = stock
         )
 
-        self.tabla_productos.setItem(
-            fila, 1, QTableWidgetItem(nombre)
-        )
+        session.add(producto)
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            session.close()
 
-        self.tabla_productos.setItem(
-            fila, 2, QTableWidgetItem(str(precio))
-        )
+            QMessageBox.warning(
+                self,
+                "Código duplicado",
+                "Ya existe un producto con ese código."
+            )
 
-        self.tabla_productos.setItem(
-            fila, 3, QTableWidgetItem(str(stock))
-        )
+            return
+
+        session.close()
+
+        self.cargar_productos()
 
         self.codigo.clear()
         self.nombre.clear()
