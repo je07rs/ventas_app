@@ -15,10 +15,10 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from database.connection import SessionLocal
 from database.models import Producto
+from database.product_repository import obtener_productos, guardar_producto
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -185,8 +185,6 @@ class MainWindow(QMainWindow):
             )
             return
 
-        session = SessionLocal()
-
         producto = Producto(
             codigo = codigo,
             nombre = nombre,
@@ -194,13 +192,9 @@ class MainWindow(QMainWindow):
             stock = stock
         )
 
-        session.add(producto)
         try:
-            session.commit()
+            guardar_producto(producto)
         except IntegrityError:
-            session.rollback()
-            session.close()
-
             QMessageBox.warning(
                 self,
                 "Código duplicado",
@@ -208,8 +202,6 @@ class MainWindow(QMainWindow):
             )
 
             return
-
-        session.close()
 
         self.cargar_productos()
 
@@ -220,12 +212,8 @@ class MainWindow(QMainWindow):
 
     def cargar_productos(self):
 
-        session = SessionLocal()
-
-        productos = session.scalars(
-            select(Producto)
-        ).all()
-
+        productos = obtener_productos()
+        
         self.tabla_productos.setRowCount(0)
 
         for producto in productos:
@@ -248,4 +236,3 @@ class MainWindow(QMainWindow):
                 fila, 3, QTableWidgetItem(str(producto.stock))
             )
 
-        session.close()
