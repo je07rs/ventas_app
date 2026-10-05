@@ -41,6 +41,10 @@ class Venta(Base):
 
 class DetalleVenta(Base):
     __tablename__="detalle_ventas"
+    __table_args__=(
+        CheckConstraint("cantidad > 0", name="ck_detalle_cantidad_positiva"),
+        CheckConstraint("precio_unitario >= 0", name="ck_detalle_precio_no_negativo"),
+    )
 
     id: Mapped[int] = mapped_column(primary_key=True)
     venta_id: Mapped[int] = mapped_column(
