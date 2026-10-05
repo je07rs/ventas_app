@@ -39,3 +39,28 @@ def obtener_producto_por_codigo(codigo):
                 Producto.codigo == codigo
             )
         )
+
+def actualizar_producto(codigo, nombre, precio, stock):
+
+    with SessionLocal() as session:
+
+        producto = session.scalar(
+            select(Producto).where(
+                Producto.codigo == codigo
+            )
+        )
+
+        if producto is None:
+            return False
+
+        producto.nombre = nombre
+        producto.precio = precio
+        producto.stock = stock
+
+        try:
+            session.commit()
+        except IntegrityError:
+            session.rollback()
+            raise
+
+        return True

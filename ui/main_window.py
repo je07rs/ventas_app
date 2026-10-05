@@ -16,7 +16,12 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from sqlalchemy.exc import IntegrityError
-from database.product_repository import obtener_productos, guardar_producto, obtener_producto_por_codigo
+from database.product_repository import (
+    obtener_productos, 
+    guardar_producto, 
+    obtener_producto_por_codigo,
+    actualizar_producto
+)
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -83,6 +88,9 @@ class MainWindow(QMainWindow):
         boton_registrar = QPushButton("Registrar producto")
         boton_registrar.clicked.connect(self.registrar_productos)
 
+        boton_actualizar = QPushButton("Actualizar producto")
+        boton_actualizar.clicked.connect(self.actualizar_productos)
+
         btn_buscar.clicked.connect(self.buscar_productos)
 
         self.tabla_productos = QTableWidget()
@@ -101,6 +109,7 @@ class MainWindow(QMainWindow):
         layout_productos.addWidget(titulo_productos)
         layout_productos.addLayout(formulario_productos)
         layout_productos.addWidget(boton_registrar)
+        layout_productos.addWidget(boton_actualizar)
         layout_productos.addWidget(self.tabla_productos)
         layout_productos.addStretch()
 
@@ -194,6 +203,75 @@ class MainWindow(QMainWindow):
         self.nombre.clear()
         self.precio.clear()
         self.stock.clear()
+
+    def actualizar_productos(self):
+        codigo = self.codigo.text().strip()
+        nombre = self.nombre.text().strip()
+        precio = self.precio.text()
+        stock = self.stock.text()
+
+        if not codigo or not nombre:
+            QMessageBox.warning(
+                self,
+                "Datos incompletos",
+                "El código y el nombre son obligatorios"
+            )
+            return
+
+        try:
+            precio = float(precio)
+            stock = int(stock)
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                "Datos inválidos",
+                "El precio debe ser un número y el stock debe ser un número entero."
+            )
+            return
+
+        if precio < 0 or stock < 0:
+            QMessageBox.warning(
+                self,
+                "Datos invalidos",
+                "El precio y el stock no pueden ser negativos."
+            )
+            return
+
+        try:
+            actualizado = actualizar_producto(
+                codigo,
+                nombre,
+                precio,
+                stock
+            )
+        except IntegrityError:
+            QMessageBox.warning(
+                self,
+                "Error",
+                "No se pudo actualizar el producto."
+            )
+            return
+
+        if not actualizado:
+            QMessageBox.warning(
+                self,
+                "Producto no encontrado",
+                "No existe un producto con ese código."
+            )
+            return
+
+        self.cargar_productos()
+
+        self.codigo.clear()
+        self.nombre.clear()
+        self.precio.clear()
+        self.stock.clear()
+
+        QMessageBox.information(
+            self,
+            "Producto actualizado",
+            "El producto se actualizó correctamente"
+        )
 
     def buscar_productos(self):
         codigo = self.codigo.text().strip()
