@@ -10,6 +10,9 @@ def registrar_venta(detalles):
     with SessionLocal() as session:
         try:
             total = Decimal("0.00")
+
+            productos = {}
+
             for detalle in detalles:
                 producto = session.scalar(
                     select(Producto).where(
@@ -21,6 +24,8 @@ def registrar_venta(detalles):
                     raise ValueError(
                         f"El producto {detalle['producto_id']} no existe"
                     )
+
+                productos[producto.id] = producto
 
                 cantidad = detalle["cantidad"]
 
@@ -45,11 +50,7 @@ def registrar_venta(detalles):
             session.flush()
 
             for detalle in detalles:
-                producto = session.scalar(
-                    select(Producto).where(
-                        Producto.id == detalle["producto_id"]
-                    )
-                )
+                producto = productos[detalle["producto_id"]]
                 cantidad = detalle["cantidad"]
 
                 detalle_venta = DetalleVenta(
