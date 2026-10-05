@@ -16,7 +16,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from sqlalchemy.exc import IntegrityError
-from database.models import Producto
 from database.product_repository import obtener_productos, guardar_producto, obtener_producto_por_codigo
 
 class MainWindow(QMainWindow):
@@ -178,15 +177,8 @@ class MainWindow(QMainWindow):
             )
             return
 
-        producto = Producto(
-            codigo = codigo,
-            nombre = nombre,
-            precio = precio,
-            stock = stock
-        )
-
         try:
-            guardar_producto(producto)
+            guardar_producto(codigo, nombre, precio, stock)
         except IntegrityError:
             QMessageBox.warning(
                 self,

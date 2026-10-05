@@ -13,7 +13,14 @@ def obtener_productos():
 
     return productos
 
-def guardar_producto(producto):
+def guardar_producto(codigo, nombre, precio, stock):
+
+    producto = Producto(
+        codigo = codigo,
+        nombre = nombre,
+        precio = precio,
+        stock = stock
+    )
 
     with SessionLocal() as session:
 
