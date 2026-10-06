@@ -6,12 +6,14 @@ from PySide6.QtWidgets import (
     QPushButton,
     QMessageBox,
     QTableWidget,
-    QTableWidgetItem
+    QTableWidgetItem,
+    QLabel
 )
 
 from database.product_repository import (
     obtener_producto_por_codigo
 )
+from database.venta_repository import registrar_venta
 
 class SalesWidget(QWidget):
     def __init__(self):
@@ -51,6 +53,12 @@ class SalesWidget(QWidget):
             "Subtotal"
         ])
         layout_ventas.addWidget(self.tabla_detalles)
+        self.label_total = QLabel("Total: S/0.00")
+        layout_ventas.addWidget(self.label_total)
+
+        btn_registrar = QPushButton("Registrar venta")
+        layout_ventas.addWidget(btn_registrar)
+        btn_registrar.clicked.connect(self.registrar_venta_ui)
 
         self.detalles_venta = []
 
@@ -197,3 +205,46 @@ class SalesWidget(QWidget):
                 4,
                 QTableWidgetItem(str(subtotal))
             )
+
+        self.actualizar_total()
+
+    def actualizar_total(self):
+        total = 0
+
+        for detalle in self.detalles_venta:
+            subtotal = detalle["precio"] * detalle["cantidad"]
+            total += subtotal
+
+        self.label_total.setText(f"Total: S/ {total:.2f}")
+
+    def registrar_venta_ui(self):
+        if not self.detalles_venta:
+            QMessageBox.warning(
+                self,
+                "Registrar venta",
+                "No hay productos en la venta."
+            )
+            return
+
+        detalles = []
+
+        for detalle in self.detalles_venta:
+            detalles.append({
+                "producto_id": detalle["producto_id"],
+                "cantidad":detalle["cantidad"]
+            })
+
+        venta_id = registrar_venta(detalles)
+        QMessageBox.information(
+            self,
+            "Venta registrada",
+            f"La venta se registró correctamente.\nNúmero de venta: {venta_id}"
+        )
+
+        self.detalles_venta.clear()
+        self.actualizar_tabla()
+
+        self.codigo.clear()
+        self.nombre.clear()
+        self.precio.clear()
+        self.cantidad.clear()
