@@ -1,0 +1,199 @@
+from PySide6.QtWidgets import (
+    QWidget,
+    QVBoxLayout,
+    QFormLayout,
+    QLineEdit,
+    QPushButton,
+    QMessageBox,
+    QTableWidget,
+    QTableWidgetItem
+)
+
+from database.product_repository import (
+    obtener_producto_por_codigo
+)
+
+class SalesWidget(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        layout_ventas = QVBoxLayout()
+
+        formulario_venta = QFormLayout()
+
+        self.codigo = QLineEdit()
+        self.nombre = QLineEdit()
+        self.precio = QLineEdit()
+        self.cantidad = QLineEdit()
+
+        btn_buscar = QPushButton("Buscar")
+        btn_buscar.clicked.connect(self.buscar_producto)
+
+        btn_agregar = QPushButton("Agregar")
+        btn_agregar.clicked.connect(self.agregar_producto)
+
+        formulario_venta.addRow("Codigo:", self.codigo)
+        formulario_venta.addRow("", btn_buscar)
+        formulario_venta.addRow("Nombre:", self.nombre)
+        formulario_venta.addRow("Precio:", self.precio)
+        formulario_venta.addRow("Cantidad:", self.cantidad)
+        formulario_venta.addRow("", btn_agregar)
+
+        layout_ventas.addLayout(formulario_venta)
+
+        self.tabla_detalles = QTableWidget()
+        self.tabla_detalles.setColumnCount(5)
+        self.tabla_detalles.setHorizontalHeaderLabels([
+            "Código",
+            "Producto",
+            "Cantidad",
+            "Precio",
+            "Subtotal"
+        ])
+        layout_ventas.addWidget(self.tabla_detalles)
+
+        self.detalles_venta = []
+
+        self.setLayout(layout_ventas)
+
+    def buscar_producto(self):
+        codigo = self.codigo.text().strip()
+
+        if not codigo:
+            QMessageBox.warning(
+                self,
+                "Búsqueda",
+                "Ingrese un código"
+            )
+            return
+
+        producto = obtener_producto_por_codigo(codigo)
+
+        if producto is None:
+            QMessageBox.information(
+                self,
+                "Búsqueda",
+                "Producto no encontrado"
+            )
+
+            self.nombre.clear()
+            self.precio.clear()
+            self.cantidad.clear()
+            return
+
+        self.nombre.setText(producto.nombre)
+        self.precio.setText(str(producto.precio))
+        self.cantidad.setText("1")
+
+    def agregar_producto(self):
+        codigo = self.codigo.text().strip()
+
+        if not codigo:
+            QMessageBox.warning(
+                self,
+                "Agregar producto",
+                "Primero debe buscar un producto"
+            )
+            return
+        
+        cantidad = self.cantidad.text().strip()
+
+        if not cantidad:
+            cantidad = 1
+        else:
+            try:
+                cantidad = int(cantidad)
+            except ValueError:
+                QMessageBox.warning(
+                    self,
+                    "Cantidad inválida",
+                    "La cantidad debe ser un número entero."
+                )
+                return
+
+        if cantidad <= 0:
+            QMessageBox.warning(
+                self,
+                "Cantidad inválida",
+                "La cantidad debe ser mayor que cero."
+            )
+
+        producto = obtener_producto_por_codigo(codigo)
+
+        if producto is None:
+            QMessageBox.warning(
+                self,
+                "Producto no encontrado",
+                "No se encontró un producto con ese código."
+            )
+            return
+
+        cantidad_actual = 0
+
+        for detalle_existente in self.detalles_venta:
+            if detalle_existente["producto_id"] == producto.id:
+                cantidad_actual = detalle_existente["cantidad"]
+                break
+
+        if cantidad_actual + cantidad > producto.stock:
+            QMessageBox.warning(
+                self,
+                "Stock insuficiente",
+                f"Stock disponible: {producto.stock}"
+            )
+            return
+        
+        detalle = {
+            "producto_id": producto.id,
+            "codigo": producto.codigo,
+            "nombre": producto.nombre,
+            "cantidad":cantidad,
+            "precio":producto.precio
+        }
+
+        for detalle_existente in self.detalles_venta:
+            if detalle_existente["producto_id"] == producto.id:
+                detalle_existente["cantidad"] += cantidad
+                break
+        else:
+            self.detalles_venta.append(detalle)
+
+        self.actualizar_tabla()
+
+        self.codigo.clear()
+        self.nombre.clear()
+        self.precio.clear()
+        self.cantidad.clear()
+
+    def actualizar_tabla(self):
+        self.tabla_detalles.setRowCount(0)
+
+        for detalle in self.detalles_venta:
+            fila = self.tabla_detalles.rowCount()
+            self.tabla_detalles.insertRow(fila)
+            subtotal = detalle["precio"]*detalle["cantidad"]
+            self.tabla_detalles.setItem(
+                fila, 
+                0, 
+                QTableWidgetItem(detalle["codigo"])
+            )
+            self.tabla_detalles.setItem(
+                fila,
+                1,
+                QTableWidgetItem(detalle["nombre"])
+            )
+            self.tabla_detalles.setItem(
+                fila,
+                2,
+                QTableWidgetItem(str(detalle["cantidad"]))
+            )
+            self.tabla_detalles.setItem(
+                fila,
+                3,
+                QTableWidgetItem(str(detalle["precio"]))
+            )
+            self.tabla_detalles.setItem(
+                fila,
+                4,
+                QTableWidgetItem(str(subtotal))
+            )

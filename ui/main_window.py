@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from ui.product_widget import ProductWidget
+from ui.sales_widget import SalesWidget
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -55,14 +56,12 @@ class MainWindow(QMainWindow):
 
         paginas = QStackedWidget()
 
-        pagina_ventas = QLabel("Pantalla de Ventas")
+        pagina_ventas = SalesWidget()
 
         pagina_productos = ProductWidget()
 
         pagina_inventario = QLabel("Pantalla de Inventario")
         pagina_reportes = QLabel("Pantalla de Reportes")
-
-        pagina_ventas.setAlignment(Qt.AlignCenter)
         
         pagina_inventario.setAlignment(Qt.AlignCenter)
         pagina_reportes.setAlignment(Qt.AlignCenter)
