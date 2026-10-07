@@ -233,8 +233,25 @@ class SalesWidget(QWidget):
                 "producto_id": detalle["producto_id"],
                 "cantidad":detalle["cantidad"]
             })
+        try:
+            venta_id = registrar_venta(detalles)
 
-        venta_id = registrar_venta(detalles)
+        except ValueError as e:
+            QMessageBox.warning(
+                self,
+                "Error al registrar venta",
+                str(e)
+            )
+            return
+
+        except Exception:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "Ocurrió un error inesperado al registrar la venta."
+            )
+            return
+
         QMessageBox.information(
             self,
             "Venta registrada",
