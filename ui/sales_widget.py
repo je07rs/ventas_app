@@ -60,6 +60,10 @@ class SalesWidget(QWidget):
         layout_ventas.addWidget(btn_registrar)
         btn_registrar.clicked.connect(self.registrar_venta_ui)
 
+        btn_eliminar = QPushButton("Eliminar producto")
+        btn_eliminar.clicked.connect(self.eliminar_producto)
+        layout_ventas.addWidget(btn_eliminar)
+
         self.detalles_venta = []
 
         self.setLayout(layout_ventas)
@@ -265,3 +269,16 @@ class SalesWidget(QWidget):
         self.nombre.clear()
         self.precio.clear()
         self.cantidad.clear()
+
+    def eliminar_producto(self):
+        fila = self.tabla_detalles.currentRow()
+
+        if fila == -1:
+            QMessageBox.warning(
+                self,
+                "Eliminar producto",
+                "Seleccione un producto."
+            )
+            return
+        self.detalles_venta.pop(fila)
+        self.actualizar_tabla()
