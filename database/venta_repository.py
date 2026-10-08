@@ -2,7 +2,7 @@ from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import select
-
+from sqlalchemy.orm import joinedload
 from database.connection import SessionLocal
 from database.models import Venta, DetalleVenta, Producto
 
@@ -70,3 +70,22 @@ def registrar_venta(detalles):
         except Exception:
             session.rollback()
             raise
+
+def obtener_ventas():
+    with SessionLocal() as session:
+        stmt = select(Venta).order_by(Venta.id.desc())
+        return session.scalars(stmt).all()
+
+def obtener_detalles_venta(venta_id):
+    with SessionLocal() as session:
+        stmt = (
+            select(DetalleVenta)
+            .options(joinedload(DetalleVenta.producto))
+            .where(DetalleVenta.venta_id == venta_id)
+        )
+        return session.scalars(stmt).all()
+
+def obtener_venta(venta_id):
+    with SessionLocal() as session:
+        stmt = select(Venta).where(Venta.id == venta_id)
+        return session.scalar(stmt)
