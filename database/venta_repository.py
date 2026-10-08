@@ -71,9 +71,14 @@ def registrar_venta(detalles):
             session.rollback()
             raise
 
-def obtener_ventas():
+def obtener_ventas(fecha_desde=None, fecha_hasta=None):
     with SessionLocal() as session:
-        stmt = select(Venta).order_by(Venta.id.desc())
+        stmt = select(Venta)
+        if fecha_desde is not None:
+            stmt = stmt.where(Venta.fecha >= fecha_desde)
+        if fecha_hasta is not None:
+            stmt = stmt.where(Venta.fecha <= fecha_hasta)
+        stmt = stmt.order_by(Venta.id.desc())
         return session.scalars(stmt).all()
 
 def obtener_detalles_venta(venta_id):
