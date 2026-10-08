@@ -71,9 +71,6 @@ class SalesHistoryWidget(QWidget):
 
     def cargar_ventas(self):
         ventas = obtener_ventas()
-
-        self.tabla_ventas.setRowCount(0)
-
         self.mostrar_ventas(ventas)
 
     def ver_detalle(self):
