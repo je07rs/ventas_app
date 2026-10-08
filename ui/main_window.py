@@ -71,6 +71,10 @@ class MainWindow(QMainWindow):
         paginas.addWidget(pagina_inventario)
         paginas.addWidget(pagina_reportes)
 
+        def mostrar_reportes():
+            pagina_reportes.cargar_ventas()
+            paginas.setCurrentIndex(3)
+
         # CONECTAR BOTONES
 
         boton_ventas.clicked.connect(
@@ -86,7 +90,7 @@ class MainWindow(QMainWindow):
         )
 
         boton_reportes.clicked.connect(
-            lambda: paginas.setCurrentIndex(3)
+            mostrar_reportes
         )
 
         # AGREGAMOS TODO
