@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import CheckConstraint, ForeignKey, Numeric
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from typing import List
+import sqlalchemy as sa
 
 class Base(DeclarativeBase):
     pass
@@ -72,3 +73,31 @@ class DetalleVenta(Base):
     producto: Mapped["Producto"] = relationship(
         "Producto"
     )
+
+class MovimientoInventario(Base):
+    __tablename__ = "movimientos_inventario"
+
+    __table_args__ = (
+        CheckConstraint(
+            "cantidad > 0",
+            name = "ck_movimiento_cantidad_positiva"
+        ),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    producto_id: Mapped[int] = mapped_column(
+        ForeignKey("productos.id"),
+        nullable=False
+    )
+
+    cantidad: Mapped[int] = mapped_column(nullable=False)
+
+    fecha: Mapped[datetime] = mapped_column(
+        sa.DateTime(),
+        nullable=False
+    )
+
+    observacion: Mapped[str | None] = mapped_column(nullable=True)
+
+    producto: Mapped["Producto"] = relationship("Producto")
