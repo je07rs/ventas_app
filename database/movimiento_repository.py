@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import select
 from database.connection import SessionLocal
 from database.models import Producto, MovimientoInventario
+from sqlalchemy.orm import selectinload
 
 def registrar_entrada(producto_id, cantidad, observacion=None):
     if cantidad <= 0:
@@ -130,10 +131,14 @@ def registrar_ajuste(producto_id, stock_contado, observacion=None):
             session.rollback()
             raise
 
+
 def obtener_movimientos():
     with SessionLocal() as session:
         consulta = (
             select(MovimientoInventario)
+            .options(
+                selectinload(MovimientoInventario.producto)
+            )
             .order_by(MovimientoInventario.fecha.desc())
         )
 

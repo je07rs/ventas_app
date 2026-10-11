@@ -19,6 +19,7 @@ from database.movimiento_repository import (
 )
 from ui.inventory_exit_dialog import InventoryExitDialog
 from ui.inventory_adjustment_dialog import InventoryAdjustmentDialog
+from ui.inventory_history_dialog import InventoryHistoryDialog
 
 STOCK_BAJO_LIMITE = 10
 
@@ -59,6 +60,10 @@ class InventoryWidget (QWidget):
         layout.addWidget(self.btn_ajuste)
         self.btn_ajuste.clicked.connect(self.ajustar_inventario)
         self.setLayout(layout)
+
+        self.btn_historial = QPushButton("Historial de movimientos")
+        layout.addWidget(self.btn_historial)
+        self.btn_historial.clicked.connect(self.mostrar_historial)
 
         self.btn_actualizar.clicked.connect(self.cargar_inventario)
         self.cargar_inventario()
@@ -189,3 +194,8 @@ class InventoryWidget (QWidget):
                 "Error",
                 f"No se pudo registrar el ajuste.\n{error}"
             )
+
+
+    def mostrar_historial(self):
+        dialogo = InventoryHistoryDialog(self)
+        dialogo.exec()
