@@ -82,6 +82,14 @@ class MovimientoInventario(Base):
             "cantidad > 0",
             name = "ck_movimiento_cantidad_positiva"
         ),
+        CheckConstraint(
+            "tipo IN ('ENTRADA', 'SALIDA', 'AJUSTE')",
+            name = "ck_movimiento_tipo_valido",
+        ),
+        CheckConstraint(
+            "stock_anterior >= 0 AND stock_nuevo >= 0",
+            name = "ck_movimiento_stock_no_negativo",
+        ),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -91,7 +99,18 @@ class MovimientoInventario(Base):
         nullable=False
     )
 
+    tipo: Mapped[str] = mapped_column(
+        sa.String(10),
+        nullable=False,
+        default="ENTRADA",
+    )
     cantidad: Mapped[int] = mapped_column(nullable=False)
+
+    stock_anterior: Mapped[int | None] = mapped_column(nullable=False)
+
+    stock_nuevo: Mapped[int | None] = mapped_column(nullable=False)
+
+    stock_contado: Mapped[int | None] = mapped_column(nullable=False)
 
     fecha: Mapped[datetime] = mapped_column(
         sa.DateTime(),

@@ -12,7 +12,13 @@ from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from database.product_repository import obtener_productos
 from ui.inventory_entry_dialog import InventoryEntryDialog
-from database.movimiento_repository import registrar_entrada
+from database.movimiento_repository import (
+    registrar_entrada,
+    registrar_salida,
+    registrar_ajuste
+)
+from ui.inventory_exit_dialog import InventoryExitDialog
+from ui.inventory_adjustment_dialog import InventoryAdjustmentDialog
 
 STOCK_BAJO_LIMITE = 10
 
@@ -45,6 +51,13 @@ class InventoryWidget (QWidget):
         layout.addWidget(self.btn_entrada)
         self.btn_entrada.clicked.connect(self.registrar_entrada_inventario)
 
+        self.btn_salida = QPushButton("Registrar salida")
+        layout.addWidget(self.btn_salida)
+        self.btn_salida.clicked.connect(self.registrar_salida_inventario)
+
+        self.btn_ajuste = QPushButton("Ajustar inventario")
+        layout.addWidget(self.btn_ajuste)
+        self.btn_ajuste.clicked.connect(self.ajustar_inventario)
         self.setLayout(layout)
 
         self.btn_actualizar.clicked.connect(self.cargar_inventario)
@@ -116,4 +129,63 @@ class InventoryWidget (QWidget):
                 self,
                 "Error",
                 f"No se pudo registrar la entrada.\n{error}"
+            )
+
+    def registrar_salida_inventario(self):
+        dialogo = InventoryExitDialog(self)
+
+        if dialogo.exec() != dialogo.DialogCode.Accepted:
+            return
+
+        try:
+            datos = dialogo.obtener_datos()
+
+            registrar_salida(
+                producto_id = datos["producto_id"],
+                cantidad=datos["cantidad"],
+                observacion=datos["observacion"],
+            )
+
+            self.cargar_inventario()
+
+            QMessageBox.information(
+                self,
+                "Salida registrada",
+                "La salida se registró correctamente y el inventario fue actualizado."
+            )
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"No se pudo registrar la salida.\n{error}"
+            )
+
+    def ajustar_inventario(self):
+        dialogo = InventoryAdjustmentDialog(self)
+
+        if dialogo.exec() != dialogo.DialogCode.Accepted:
+            return
+
+        try:
+            datos = dialogo.obtener_datos()
+
+            registrar_ajuste(
+                producto_id=datos["producto_id"],
+                stock_contado=datos["stock_contado"],
+                observacion=datos["observacion"],
+            )
+
+            self.cargar_inventario()
+
+            QMessageBox.information(
+                self,
+                "Ajuste registrado",
+                "El ajuste se registró correctamente y el inventario fue actualizado."
+            )
+
+        except Exception as error:
+            QMessageBox.critical(
+                self,
+                "Error",
+                f"No se pudo registrar el ajuste.\n{error}"
             )
