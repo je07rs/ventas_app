@@ -106,11 +106,11 @@ class MovimientoInventario(Base):
     )
     cantidad: Mapped[int] = mapped_column(nullable=False)
 
-    stock_anterior: Mapped[int | None] = mapped_column(nullable=False)
+    stock_anterior: Mapped[int | None] = mapped_column(nullable=True)
 
-    stock_nuevo: Mapped[int | None] = mapped_column(nullable=False)
+    stock_nuevo: Mapped[int | None] = mapped_column(nullable=True)
 
-    stock_contado: Mapped[int | None] = mapped_column(nullable=False)
+    stock_contado: Mapped[int | None] = mapped_column(nullable=True)
 
     fecha: Mapped[datetime] = mapped_column(
         sa.DateTime(),
