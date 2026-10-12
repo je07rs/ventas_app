@@ -54,7 +54,7 @@ class InventoryHistoryDialog(QDialog):
             producto = movimiento.producto
 
             valores = [
-                movimiento.fecha.strftime("%d/%n/%Y %H:%M"),
+                movimiento.fecha.strftime("%d/%m/%Y %H:%M"),
                 producto.codigo,
                 producto.nombre,
                 movimiento.tipo,
