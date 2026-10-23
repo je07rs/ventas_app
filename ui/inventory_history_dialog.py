@@ -10,11 +10,13 @@ from PySide6.QtWidgets import (
     QComboBox,
     QDateEdit,
     QMessageBox,
-    QHBoxLayout
+    QHBoxLayout,
+    QFileDialog
 )
 from PySide6.QtCore import QDate
 from database.movimiento_repository import obtener_movimientos
 from datetime import datetime
+import csv
 
 class InventoryHistoryDialog(QDialog):
     def __init__(self, parent=None):
@@ -59,6 +61,10 @@ class InventoryHistoryDialog(QDialog):
         self.btn_limpiar_filtro = QPushButton("Limpiar")
         self.btn_limpiar_filtro.clicked.connect(self.limpiar_filtro)
         filtros_layout.addWidget(self.btn_limpiar_filtro)
+
+        self.btn_exportar = QPushButton("Eportar CSV")
+        self.btn_exportar.clicked.connect(self.exportar_csv)
+        filtros_layout.addWidget(self.btn_exportar)
 
         layout.addLayout(filtros_layout)
 
@@ -182,3 +188,46 @@ class InventoryHistoryDialog(QDialog):
         self.busqueda.clear()
         self.fecha_desde.setDate(QDate(2000,1,1))
         self.fecha_hasta.setDate(QDate.currentDate())
+
+    def exportar_csv(self):
+        ruta, _=QFileDialog.getSaveFileName(
+            self,
+            "Guardar historial de inventario",
+            "historial_inventario.csv",
+            "Archivos CSV (*.csv)"
+        )
+
+        if not ruta:
+            return
+
+        if not ruta.lower().endswith(".csv"):
+            ruta += ".csv"
+
+        with open(ruta, "w", newline = "", encoding="utf-8-sig") as archivo:
+            escritor = csv.writer(archivo, delimiter=";")
+
+            encabezados = [
+                self.tabla_movimientos.horizontalHeaderItem(col).text()
+                for col in range(self.tabla_movimientos.columnCount())
+            ]
+
+            escritor.writerow(encabezados)
+
+            for fila in range(self.tabla_movimientos.rowCount()):
+                if self.tabla_movimientos.isRowHidden(fila):
+                    continue
+
+                valores = [
+                    self.tabla_movimientos.item(fila, col).text()
+                    if self.tabla_movimientos.item(fila, col) is not None
+                    else ""
+                    for col in range(self.tabla_movimientos.columnCount())
+                ]
+
+                escritor.writerow(valores)
+
+        QMessageBox.information(
+            self,
+            "Exportación completada",
+            f"El historial se guardó en:\n{ruta}"
+        )
