@@ -17,6 +17,9 @@ from PySide6.QtCore import QDate
 from database.movimiento_repository import obtener_movimientos
 from datetime import datetime
 import csv
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+from openpyxl.utils import get_column_letter
 
 class InventoryHistoryDialog(QDialog):
     def __init__(self, parent=None):
@@ -65,6 +68,10 @@ class InventoryHistoryDialog(QDialog):
         self.btn_exportar = QPushButton("Eportar CSV")
         self.btn_exportar.clicked.connect(self.exportar_csv)
         filtros_layout.addWidget(self.btn_exportar)
+
+        self.btn_exportar_excel = QPushButton("Exportar Excel")
+        self.btn_exportar_excel.clicked.connect(self.exportar_excel)
+        filtros_layout.addWidget(self.btn_exportar_excel)
 
         layout.addLayout(filtros_layout)
 
@@ -230,4 +237,70 @@ class InventoryHistoryDialog(QDialog):
             self,
             "Exportación completada",
             f"El historial se guardó en:\n{ruta}"
+        )
+
+    def exportar_excel(self):
+        ruta, _=QFileDialog.getSaveFileName(
+            self,
+            "Guardar historial de inventario",
+            "historial_inventario.xlsx",
+            "Archivos Excel (*.xlsx)"
+        )
+
+        if not ruta:
+            return
+
+        if not ruta.lower().endswith(".xlsx"):
+            ruta += ".xlsx"
+
+        libro = Workbook()
+        hoja = libro.active
+        hoja.title = "Historial de inventario"
+
+        encabezados = [
+            self.tabla_movimientos.horizontalHeaderItem(col).text()
+            for col in range(self.tabla_movimientos.columnCount())
+        ]
+
+        hoja.append(encabezados)
+
+        for fila in range(self.tabla_movimientos.rowCount()):
+            if self.tabla_movimientos.isRowHidden(fila):
+                continue
+
+            valores = [
+                self.tabla_movimientos.item(fila, col).text()
+                if self.tabla_movimientos.item(fila, col) is not None
+                else ""
+                for col in range(self.tabla_movimientos.columnCount())
+            ]
+
+            hoja.append(valores)
+
+        for celda in hoja[1]:
+            celda.font = Font(bold=True, color="FFFFFF")
+            celda.fill = PatternFill(
+                fill_type="solid",
+                fgColor="1F4E78"
+            )
+            celda.alignment = Alignment(horizontal="center")
+
+        for columna in hoja.columns:
+            longitud_maxima = max(
+                len(str(celda.value)) if celda.value is not None else 0
+                for celda in columna
+            )
+
+            letra_columna = get_column_letter(columna[0].column)
+            hoja.column_dimensions[letra_columna].width = min(
+                longitud_maxima + 3,
+                40
+            )
+
+        libro.save(ruta)
+
+        QMessageBox.information(
+            self,
+            "Exportación completada",
+            f"El historial se guardó en: \n{ruta}"
         )
